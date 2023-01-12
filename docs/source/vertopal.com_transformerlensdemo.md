@@ -1,9 +1,8 @@
 # Transformer Lens Main Demo Notebook
 
-`<b style="color: red">`{=html}To use this notebook, go to Runtime \>
+***To use this notebook, go to Runtime
 Change Runtime Type and select GPU as the hardware
-accelerator.`</b>`{=html}
-:::
+accelerator.***
 
 **Tips for reading this Colab:**
 
@@ -74,10 +73,7 @@ cv.examples.hello("Neel")
     )
     </script>
 ```
-:::
-:::
 
-::: {.cell .code execution_count="4"}
 ```
 # Import stuff
 import torch
@@ -104,9 +100,7 @@ import dataclasses
 import datasets
 from IPython.display import HTML
 ```
-:::
 
-::: {.cell .code execution_count="5"}
 ```
 import transformer_lens
 import transformer_lens.utils as utils
@@ -116,29 +110,18 @@ from transformer_lens.hook_points import (
 )  # Hooking utilities
 from transformer_lens import HookedTransformer, HookedTransformerConfig, FactoredMatrix, ActivationCache
 ```
-:::
 
-::: {.cell .markdown}
 We turn automatic differentiation off, to save GPU memory, as this
 notebook focuses on model inference not model training.
-:::
 
-::: {.cell .code execution_count="6"}
-``` {.python}
+```
 torch.set_grad_enabled(False)
 ```
 
-::: {.output .execute_result execution_count="6"}
-    <torch.autograd.grad_mode.set_grad_enabled at 0x7f973be365d0>
-:::
-:::
-
-::: {.cell .markdown}
 Plotting helper functions:
-:::
 
-::: {.cell .code execution_count="7"}
-``` {.python}
+
+```
 def imshow(tensor, renderer=None, xaxis="", yaxis="", **kwargs):
     px.imshow(utils.to_numpy(tensor), color_continuous_midpoint=0.0, color_continuous_scale="RdBu", labels={"x":xaxis, "y":yaxis}, **kwargs).show(renderer)
 
@@ -203,16 +186,12 @@ can load any of them in with
 `HookedTransformer.from_pretrained(MODEL_NAME)`. For this demo notebook
 we\'ll look at GPT-2 Small, an 80M parameter model, see the Available
 Models section for info on the rest.
-:::
 
-::: {.cell .code execution_count="8"}
-``` {.python}
+```
 device = "cuda" if torch.cuda.is_available() else "cpu"
 ```
-:::
 
-::: {.cell .code execution_count="9"}
-``` {.python}
+```
 model = HookedTransformer.from_pretrained("gpt2-small", device=device)
 ```
 
@@ -277,7 +256,7 @@ achieved the same effect. \</details?\>
 :::
 
 ::: {.cell .code execution_count="11"}
-``` {.python}
+```
 gpt2_text = "Natural language processing tasks, such as question answering, machine translation, reading comprehension, and summarization, are typically approached with supervised learning on taskspecific datasets."
 gpt2_tokens = model.to_tokens(gpt2_text)
 print(gpt2_tokens.device)
@@ -315,7 +294,7 @@ See the ActivationCache section for more on what `gpt2_cache` can do.
 :::
 
 ::: {.cell .code execution_count="12"}
-``` {.python}
+```
 print(type(gpt2_cache))
 attention_pattern = gpt2_cache["pattern", 0, "attn"]
 print(attention_pattern.shape)
@@ -329,7 +308,7 @@ gpt2_str_tokens = model.to_str_tokens(gpt2_text)
 :::
 
 ::: {.cell .code execution_count="13"}
-``` {.python}
+```
 print("Layer 0 Head Attention Patterns:")
 cv.attention.attention_patterns(tokens=gpt2_str_tokens, attention=attention_pattern)
 ```

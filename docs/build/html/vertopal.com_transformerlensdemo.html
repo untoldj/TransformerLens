@@ -20,7 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Welcome to Lumache’s documentation!" href="index.html" /> 
+    <link rel="prev" title="Transformer Lens Documentation" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -112,10 +112,9 @@
              
   <section id="transformer-lens-main-demo-notebook">
 <h1>Transformer Lens Main Demo Notebook<a class="headerlink" href="#transformer-lens-main-demo-notebook" title="Permalink to this heading"></a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">&lt;b</span> <span class="pre">style=&quot;color:</span> <span class="pre">red&quot;&gt;</span></code>{=html}To use this notebook, go to Runtime &gt;
+<p><em><strong>To use this notebook, go to Runtime
 Change Runtime Type and select GPU as the hardware
-accelerator.<code class="docutils literal notranslate"><span class="pre">&lt;/b&gt;</span></code>{=html}
-:::</p>
+accelerator.</strong></em></p>
 <p><strong>Tips for reading this Colab:</strong></p>
 <ul class="simple">
 <li><p>You can run all this code for yourself!</p></li>
@@ -180,9 +179,6 @@ accelerator.<code class="docutils literal notranslate"><span class="pre">&lt;/b&
     <span class="o">&lt;/</span><span class="n">script</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>:::
-:::</p>
-<p>::: {.cell .code execution_count=”4”}</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import stuff</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -209,8 +205,6 @@ accelerator.<code class="docutils literal notranslate"><span class="pre">&lt;/b&
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
 </pre></div>
 </div>
-<p>:::</p>
-<p>::: {.cell .code execution_count=”5”}</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">transformer_lens</span>
 <span class="kn">import</span> <span class="nn">transformer_lens.utils</span> <span class="k">as</span> <span class="nn">utils</span>
 <span class="kn">from</span> <span class="nn">transformer_lens.hook_points</span> <span class="kn">import</span> <span class="p">(</span>
@@ -220,20 +214,24 @@ accelerator.<code class="docutils literal notranslate"><span class="pre">&lt;/b&
 <span class="kn">from</span> <span class="nn">transformer_lens</span> <span class="kn">import</span> <span class="n">HookedTransformer</span><span class="p">,</span> <span class="n">HookedTransformerConfig</span><span class="p">,</span> <span class="n">FactoredMatrix</span><span class="p">,</span> <span class="n">ActivationCache</span>
 </pre></div>
 </div>
-<p>:::</p>
-<p>::: {.cell .markdown}
-We turn automatic differentiation off, to save GPU memory, as this
-notebook focuses on model inference not model training.
-:::</p>
-<p>::: {.cell .code execution_count=”6”}</p>
-<p>::: {.output .execute_result execution_count=”6”}
-&lt;torch.autograd.grad_mode.set_grad_enabled at 0x7f973be365d0&gt;
-:::
-:::</p>
-<p>::: {.cell .markdown}
-Plotting helper functions:
-:::</p>
-<p>::: {.cell .code execution_count=”7”}</p>
+<p>We turn automatic differentiation off, to save GPU memory, as this
+notebook focuses on model inference not model training.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">set_grad_enabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Plotting helper functions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">imshow</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">renderer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">px</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">),</span> <span class="n">color_continuous_midpoint</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">color_continuous_scale</span><span class="o">=</span><span class="s2">&quot;RdBu&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span><span class="n">xaxis</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span><span class="n">yaxis</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">line</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">renderer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">px</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">),</span> <span class="n">labels</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span><span class="n">xaxis</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span><span class="n">yaxis</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">caxis</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">renderer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">px</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span><span class="n">xaxis</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span><span class="n">yaxis</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="n">caxis</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h1>
@@ -284,11 +282,13 @@ research</a>!</p>
 can load any of them in with
 <code class="docutils literal notranslate"><span class="pre">HookedTransformer.from_pretrained(MODEL_NAME)</span></code>. For this demo notebook
 we’ll look at GPT-2 Small, an 80M parameter model, see the Available
-Models section for info on the rest.
-:::</p>
-<p>::: {.cell .code execution_count=”8”}</p>
-<p>:::</p>
-<p>::: {.cell .code execution_count=”9”}</p>
+Models section for info on the rest.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">HookedTransformer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;gpt2-small&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stderr}
 Using pad_token, but it is not set yet.
 :::</p>
@@ -330,6 +330,12 @@ always length 1 and kinda annoying, so passing in the
 achieved the same effect. &lt;/details?&gt;
 :::</p>
 <p>::: {.cell .code execution_count=”11”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gpt2_text</span> <span class="o">=</span> <span class="s2">&quot;Natural language processing tasks, such as question answering, machine translation, reading comprehension, and summarization, are typically approached with supervised learning on taskspecific datasets.&quot;</span>
+<span class="n">gpt2_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_tokens</span><span class="p">(</span><span class="n">gpt2_text</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">gpt2_tokens</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="n">gpt2_logits</span><span class="p">,</span> <span class="n">gpt2_cache</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_with_cache</span><span class="p">(</span><span class="n">gpt2_tokens</span><span class="p">,</span> <span class="n">remove_batch_dim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 cuda:0
 :::
@@ -356,12 +362,22 @@ network.</p>
 <p>See the ActivationCache section for more on what <code class="docutils literal notranslate"><span class="pre">gpt2_cache</span></code> can do.
 :::</p>
 <p>::: {.cell .code execution_count=”12”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">gpt2_cache</span><span class="p">))</span>
+<span class="n">attention_pattern</span> <span class="o">=</span> <span class="n">gpt2_cache</span><span class="p">[</span><span class="s2">&quot;pattern&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;attn&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">attention_pattern</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">gpt2_str_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="n">gpt2_text</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 &lt;class ‘transformer_lens.ActivationCache.ActivationCache’&gt;
 torch.Size([12, 33, 33])
 :::
 :::</p>
 <p>::: {.cell .code execution_count=”13”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Layer 0 Head Attention Patterns:&quot;</span><span class="p">)</span>
+<span class="n">cv</span><span class="o">.</span><span class="n">attention</span><span class="o">.</span><span class="n">attention_patterns</span><span class="p">(</span><span class="n">tokens</span><span class="o">=</span><span class="n">gpt2_str_tokens</span><span class="p">,</span> <span class="n">attention</span><span class="o">=</span><span class="n">attention_pattern</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Layer 0 Head Attention Patterns:
 huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks…
@@ -1673,7 +1689,7 @@ $\ln(384)\approx 5.95$, so the model is doing pretty well here.)
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Lumache’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Transformer Lens Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
