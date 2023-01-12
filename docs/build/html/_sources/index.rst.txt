@@ -7,7 +7,7 @@ It pulls data from the `Open Food Facts database <https://world.openfoodfacts.or
 and offers a *simple* and *intuitive* API.
 
 Check out the :doc:`usage` section for further information, including
-how to :ref:`installation` the project. :doc:`test2`
+how to :ref:`installation` the project.
 
 .. note::
 
@@ -18,6 +18,4 @@ Contents
 
 .. toctree::
 
-   test
-   test2
    vertopal.com_transformerlensdemo
