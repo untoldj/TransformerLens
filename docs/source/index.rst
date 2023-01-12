@@ -18,6 +18,4 @@ Contents
 
 .. toctree::
 
-   test
-   test2
    vertopal.com_transformerlensdemo
