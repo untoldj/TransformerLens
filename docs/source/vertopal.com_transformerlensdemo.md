@@ -203,8 +203,6 @@ model = HookedTransformer.from_pretrained("gpt2-small", device=device)
     Loaded pretrained model gpt2-small into HookedTransformer
 :::
 :::
-
-::: {.cell .markdown}
 To try the model the model out, let\'s find the loss on this text!
 Models can be run on a single string or a tensor of tokens (shape:
 \[batch, position\], all integers), and the possible return types are:
@@ -214,10 +212,8 @@ Models can be run on a single string or a tensor of tokens (shape:
 -   \"both\" (a tuple of (logits, loss))
 -   None (run the model, but don\'t calculate the logits - this is
     faster when we only want to use intermediate activations)
-:::
 
-::: {.cell .code execution_count="10"}
-``` {.python}
+```
 model_description_text = """## Loading Models
 
 HookedTransformer comes loaded with >40 open source GPT-style models. You can load any of them in with `HookedTransformer.from_pretrained(MODEL_NAME)`. See my explainer for documentation of all supported models, and this table for hyper-parameters and the name used to load them. Each model is loaded into the consistent HookedTransformer architecture, designed to be clean, consistent and interpretability-friendly.
@@ -232,7 +228,6 @@ print("Model loss:", loss)
 :::
 :::
 
-::: {.cell .markdown}
 ## Caching all Activations
 
 The first basic operation when doing mechanistic interpretability is to
@@ -268,7 +263,6 @@ gpt2_logits, gpt2_cache = model.run_with_cache(gpt2_tokens, remove_batch_dim=Tru
 :::
 :::
 
-::: {.cell .markdown}
 Let\'s visualize the attention pattern of all the heads in layer 0,
 using [Alan Cooney\'s CircuitsVis
 library](https://github.com/alan-cooney/CircuitsVis) (based on
@@ -291,9 +285,7 @@ can only look backwards, so information can only move forwards in the
 network.
 
 See the ActivationCache section for more on what `gpt2_cache` can do.
-:::
 
-::: {.cell .code execution_count="12"}
 ```
 print(type(gpt2_cache))
 attention_pattern = gpt2_cache["pattern", 0, "attn"]
@@ -333,14 +325,9 @@ cv.attention.attention_patterns(tokens=gpt2_str_tokens, attention=attention_patt
     )
     </script>
 ```
-:::
-:::
 
-::: {.cell .markdown}
 ## Hooks: Intervening on Activations
-:::
 
-::: {.cell .markdown}
 One of the great things about interpreting neural networks is that we
 have *full control* over our system. From a computational perspective,
 we know exactly what operations are going on inside (even if we don\'t
@@ -371,9 +358,7 @@ tensor of the correct shape.
 They also come with a range of other quality of life improvements, like the model having a `model.reset_hooks()` method to remove all hooks, or helper methods to temporarily add hooks for a single forward pass - it is *incredibly* easy to shoot yourself in the foot with standard PyTorch hooks!
 </details>
 ```
-:::
 
-::: {.cell .markdown}
 As a basic example, let\'s
 [ablate](https://dynalist.io/d/n2ZWtnoYHrU1s4vnFSAQ519J#z=fh-HJyz1CgUVrXuoiban6bYx)
 head 7 in layer 0 on the text above.
@@ -387,10 +372,8 @@ We then use the `run_with_hooks` helper function to run the model and
 *temporarily* add in the hook for just this run. We enter in the hook as
 a tuple of the activation name (also the hook point name - found with
 `utils.get_act_name`) and the hook function.
-:::
 
-::: {.cell .code execution_count="14"}
-``` {.python}
+```
 layer_to_ablate = 0
 head_index_to_ablate = 8
 
@@ -425,7 +408,7 @@ print(f"Ablated Loss: {ablated_loss.item():.3f}")
 :::
 :::
 
-::: {.cell .markdown}
+
 **Gotcha:** Hooks are global state - they\'re added in as part of the
 model, and stay there until removed. `run_with_hooks` tries to create an
 abstraction where these are local state, by removing all hooks at the
@@ -436,11 +419,11 @@ things up. Further, if you *do* add hooks of your own that you want to
 keep, which you can do with `add_hook` on the relevant
 :::
 
-::: {.cell .markdown}
+
 ### Activation Patching on the Indirect Object Identification Task
 :::
 
-::: {.cell .markdown}
+
 For a somewhat more involved example, let\'s use hooks to apply
 **[activation
 patching](https://dynalist.io/d/n2ZWtnoYHrU1s4vnFSAQ519J#z=qeWBvs-R-taFfcCq-S_hgMqx)**
@@ -481,7 +464,7 @@ the model is capable of doing the task!
 :::
 
 ::: {.cell .code execution_count="15"}
-``` {.python}
+```
 clean_prompt = "After John and Mary went to the store, Mary gave a bottle of milk to"
 corrupted_prompt = "After John and Mary went to the store, John gave a bottle of milk to"
 
@@ -527,7 +510,7 @@ the position parameter before passing it to `run_with_hooks`
 :::
 
 ::: {.cell .code execution_count="16"}
-``` {.python}
+```
 # We define a residual stream patching hook
 # We choose to act on the residual stream at the start of the layer, so we call it resid_pre
 # The type annotations are a guide to the reader and are not necessary
@@ -577,7 +560,7 @@ because we patched in the residual stream at the *start* of each layer)
 :::
 
 ::: {.cell .code execution_count="17"}
-``` {.python}
+```
 # Add the index to the end of the label, because plotly doesn't like duplicate labels
 token_labels = [f"{token}_{index}" for index, token in enumerate(model.to_str_tokens(clean_tokens))]
 imshow(ioi_patching_result, x=token_labels, xaxis="Position", yaxis="Layer", title="Normalized Logit Difference After Patching Residual Stream on the IOI Task")
@@ -666,7 +649,7 @@ goes from terrible to very good at the halfway point.
 :::
 
 ::: {.cell .code execution_count="18"}
-``` {.python}
+```
 batch_size = 10
 seq_len = 50
 random_tokens = torch.randint(1000, 10000, (batch_size, seq_len)).to(model.cfg.device)
@@ -733,7 +716,7 @@ we can identify induction heads! Let\'s define a hook to do this!
 :::
 
 ::: {.cell .code execution_count="19"}
-``` {.python}
+```
 # We make a tensor to store the induction score for each head. We put it on the model's device to avoid needing to move things between the GPU and CPU, which can be slow.
 induction_score_store = torch.zeros((model.cfg.n_layers, model.cfg.n_heads), device=model.cfg.device)
 def induction_score_hook(
@@ -811,7 +794,7 @@ visualize the pattern of the relevant head.
 :::
 
 ::: {.cell .code execution_count="20"}
-``` {.python}
+```
 induction_head_layer = 5
 induction_head_index = 5
 single_random_sequence = torch.randint(1000, 10000, (1, 20)).to(model.cfg.device)
@@ -892,7 +875,7 @@ copy the code from above to see the induction heads in that model.
 :::
 
 ::: {.cell .code execution_count="21"}
-``` {.python}
+```
 distilgpt2 = HookedTransformer.from_pretrained("distilgpt2")
 # We make a tensor to store the induction score for each head. We put it on the model's device to avoid needing to move things between the GPU and CPU, which can be slow.
 distilgpt2_induction_score_store = torch.zeros((distilgpt2.cfg.n_layers, distilgpt2.cfg.n_heads), device=distilgpt2.cfg.device)
@@ -1163,7 +1146,7 @@ for name, param in model.named_parameters():
 :::
 
 ::: {.cell .code execution_count="23"}
-``` {.python}
+```
 for name, param in model.named_parameters():
     if not name.startswith("blocks"):
         print(name, param.shape)
@@ -1207,7 +1190,7 @@ the same, unless we\'re using caching).
 :::
 
 ::: {.cell .code execution_count="24"}
-``` {.python}
+```
 test_prompt = "The quick brown fox jumped over the lazy dog"
 print("Num tokens:", len(model.to_tokens(test_prompt)))
 
@@ -1312,14 +1295,14 @@ bottom we see weird-ass tokens like \" RandomRedditor\":
 :::
 
 ::: {.cell .code execution_count="25"}
-``` {.python}
+```
 unembed_bias = model.unembed.b_U
 bias_values, bias_indices = unembed_bias.sort(descending=True)
 ```
 :::
 
 ::: {.cell .code execution_count="26"}
-``` {.python}
+```
 top_k = 20
 print(f"Top {top_k} values")
 for i in range(top_k):
@@ -1387,7 +1370,7 @@ than the Mary token.
 :::
 
 ::: {.cell .code execution_count="27"}
-``` {.python}
+```
 john_bias = model.unembed.b_U[model.to_single_token(' John')]
 mary_bias = model.unembed.b_U[model.to_single_token(' Mary')]
 
@@ -1451,7 +1434,7 @@ Some observations - there are a lot of arbitrary-ish details in here!
 :::
 
 ::: {.cell .code execution_count="28"}
-``` {.python}
+```
 example_text = "The first thing you need to figure out is *how* things are tokenized. `model.to_str_tokens` splits a string into the tokens *as a list of substrings*, and so lets you explore what the text looks like. To demonstrate this, let's use it on this paragraph."
 example_text_str_tokens = model.to_str_tokens(example_text)
 print(example_text_str_tokens)
@@ -1470,7 +1453,7 @@ this, and returns a tensor of integers on the model\'s device (shape
 :::
 
 ::: {.cell .code execution_count="29"}
-``` {.python}
+```
 example_text_tokens = model.to_tokens(example_text)
 print(example_text_tokens)
 ```
@@ -1497,7 +1480,7 @@ sequence and padding token - see the `prepend_bos` section for details)
 :::
 
 ::: {.cell .code execution_count="30"}
-``` {.python}
+```
 example_multi_text = ["The cat sat on the mat.", "The cat sat on the mat really hard."]
 example_multi_text_tokens = model.to_tokens(example_multi_text)
 print(example_multi_text_tokens)
@@ -1557,7 +1540,7 @@ and also verify that our tokens above map back to a string.
 :::
 
 ::: {.cell .code execution_count="32"}
-``` {.python}
+```
 print(f"Token 256 - the most common pair of ASCII characters: |{model.to_string(256)}|")
 # Squeeze means to remove dimensions of length 1.
 # Here, that removes the dummy batch dimension so it's a rank 1 tensor and returns a string
@@ -1584,7 +1567,7 @@ next section for details)
 :::
 
 ::: {.cell .code execution_count="33"}
-``` {.python}
+```
 print("With BOS:", model.get_token_position(" cat", "The cat sat on the mat"))
 print("Without BOS:", model.get_token_position(" cat", "The cat sat on the mat", prepend_bos=False))
 ```
@@ -1601,7 +1584,7 @@ find the first occurence\'s position and `mode="last"` to find the last
 :::
 
 ::: {.cell .code execution_count="34"}
-``` {.python}
+```
 print("First occurence", model.get_token_position(
     " cat",
     "The cat sat on the mat. The mat sat on the cat.",
@@ -1628,7 +1611,7 @@ impressive that GPT-3 can do arithmetic!)
 :::
 
 ::: {.cell .code execution_count="35"}
-``` {.python}
+```
 print(model.to_str_tokens("2342+2017=21445"))
 print(model.to_str_tokens("1000+1000000=999999"))
 ```
@@ -1679,7 +1662,7 @@ these separately, you do *not* want to prepend_bos on the answer.
 :::
 
 ::: {.cell .code execution_count="36"}
-``` {.python}
+```
 print("Logits shape by default (with BOS)", model("Hello World").shape)
 print("Logits shape with BOS", model("Hello World", prepend_bos=True).shape)
 print("Logits shape without BOS - only 2 positions!", model("Hello World", prepend_bos=False).shape)
@@ -1713,7 +1696,7 @@ Identification without a BOS (and with a name as the first token):
 :::
 
 ::: {.cell .code execution_count="37"}
-``` {.python}
+```
 ioi_logits_with_bos = model("Claire and Mary went to the shops, then Mary gave a bottle of milk to", prepend_bos=True)
 mary_logit_with_bos = ioi_logits_with_bos[0, -1, model.to_single_token(" Mary")].item()
 claire_logit_with_bos = ioi_logits_with_bos[0, -1, model.to_single_token(" Claire")].item()
@@ -1740,7 +1723,7 @@ tokenization of a specific string, not to give an input to the model!)
 :::
 
 ::: {.cell .code execution_count="38"}
-``` {.python}
+```
 print(f"| Claire| -> {model.to_str_tokens(' Claire', prepend_bos=False)}")
 print(f"|Claire| -> {model.to_str_tokens('Claire', prepend_bos=False)}")
 ```
@@ -1788,7 +1771,7 @@ directly and look at the basic operations:
 :::
 
 ::: {.cell .code execution_count="39"}
-``` {.python}
+```
 A = torch.randn(5, 2)
 B = torch.randn(2, 5)
 AB = A @ B
@@ -1816,7 +1799,7 @@ zeros.
 :::
 
 ::: {.cell .code execution_count="40"}
-``` {.python}
+```
 print("Eigenvalues:")
 print(torch.linalg.eig(AB).eigenvalues)
 print(AB_factor.eigenvalues)

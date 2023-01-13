@@ -295,8 +295,7 @@ Using pad_token, but it is not set yet.
 <p>::: {.output .stream .stdout}
 Loaded pretrained model gpt2-small into HookedTransformer
 :::
-:::</p>
-<p>::: {.cell .markdown}
+:::
 To try the model the model out, let’s find the loss on this text!
 Models can be run on a single string or a tensor of tokens (shape:
 [batch, position], all integers), and the possible return types are:</p>
@@ -305,15 +304,21 @@ Models can be run on a single string or a tensor of tokens (shape:
 <li><p>“loss” (the cross-entropy loss when predicting the next token),</p></li>
 <li><p>“both” (a tuple of (logits, loss))</p></li>
 <li><p>None (run the model, but don’t calculate the logits - this is
-faster when we only want to use intermediate activations)
-:::</p></li>
+faster when we only want to use intermediate activations)</p></li>
 </ul>
-<p>::: {.cell .code execution_count=”10”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_description_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;## Loading Models</span>
+
+<span class="s2">HookedTransformer comes loaded with &gt;40 open source GPT-style models. You can load any of them in with `HookedTransformer.from_pretrained(MODEL_NAME)`. See my explainer for documentation of all supported models, and this table for hyper-parameters and the name used to load them. Each model is loaded into the consistent HookedTransformer architecture, designed to be clean, consistent and interpretability-friendly.</span>
+
+<span class="s2">For this demo notebook we&#39;ll look at GPT-2 Small, an 80M parameter model. To try the model the model out, let&#39;s find the loss on this paragraph!&quot;&quot;&quot;</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_description_text</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;loss&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model loss:&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Model loss: tensor(4.1653, device=’cuda:0’)
 :::
 :::</p>
-<p>::: {.cell .markdown}</p>
 </section>
 <section id="caching-all-activations">
 <h2>Caching all Activations<a class="headerlink" href="#caching-all-activations" title="Permalink to this heading"></a></h2>
@@ -340,8 +345,7 @@ achieved the same effect. &lt;/details?&gt;
 cuda:0
 :::
 :::</p>
-<p>::: {.cell .markdown}
-Let’s visualize the attention pattern of all the heads in layer 0,
+<p>Let’s visualize the attention pattern of all the heads in layer 0,
 using <a class="reference external" href="https://github.com/alan-cooney/CircuitsVis">Alan Cooney’s CircuitsVis
 library</a> (based on
 <a class="reference external" href="https://github.com/anthropics/PySvelte">Anthropic’s PySvelte
@@ -359,9 +363,7 @@ attention pattern as a destination position by source position grid.
 It’s lower triangular because GPT-2 has <strong>causal attention</strong>, attention
 can only look backwards, so information can only move forwards in the
 network.</p>
-<p>See the ActivationCache section for more on what <code class="docutils literal notranslate"><span class="pre">gpt2_cache</span></code> can do.
-:::</p>
-<p>::: {.cell .code execution_count=”12”}</p>
+<p>See the ActivationCache section for more on what <code class="docutils literal notranslate"><span class="pre">gpt2_cache</span></code> can do.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">gpt2_cache</span><span class="p">))</span>
 <span class="n">attention_pattern</span> <span class="o">=</span> <span class="n">gpt2_cache</span><span class="p">[</span><span class="s2">&quot;pattern&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;attn&quot;</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">attention_pattern</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -386,15 +388,10 @@ To disable this warning, you can either:
 - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
 :::</p>
 <p>::: {.output .execute_result execution_count=”13”}</p>
-<p>:::
-:::</p>
-<p>::: {.cell .markdown}</p>
 </section>
 <section id="hooks-intervening-on-activations">
 <h2>Hooks: Intervening on Activations<a class="headerlink" href="#hooks-intervening-on-activations" title="Permalink to this heading"></a></h2>
-<p>:::</p>
-<p>::: {.cell .markdown}
-One of the great things about interpreting neural networks is that we
+<p>One of the great things about interpreting neural networks is that we
 have <em>full control</em> over our system. From a computational perspective,
 we know exactly what operations are going on inside (even if we don’t
 know what they mean!). And we can make precise, surgical edits and see
@@ -413,9 +410,7 @@ as normal, and then the hook function is applied to compute a
 replacement, and that is substituted in for the activation. The hook
 function can be an arbitrary Python function, so long as it returns a
 tensor of the correct shape.</p>
-<p>:::</p>
-<p>::: {.cell .markdown}
-As a basic example, let’s
+<p>As a basic example, let’s
 <a class="reference external" href="https://dynalist.io/d/n2ZWtnoYHrU1s4vnFSAQ519J#z=fh-HJyz1CgUVrXuoiban6bYx">ablate</a>
 head 7 in layer 0 on the text above.</p>
 <p>We define a <code class="docutils literal notranslate"><span class="pre">head_ablation_hook</span></code> function. This takes the value tensor
@@ -425,17 +420,41 @@ editing the activation in-place, we don’t strictly <em>need</em> to).</p>
 <p>We then use the <code class="docutils literal notranslate"><span class="pre">run_with_hooks</span></code> helper function to run the model and
 <em>temporarily</em> add in the hook for just this run. We enter in the hook as
 a tuple of the activation name (also the hook point name - found with
-<code class="docutils literal notranslate"><span class="pre">utils.get_act_name</span></code>) and the hook function.
-:::</p>
-<p>::: {.cell .code execution_count=”14”}</p>
+<code class="docutils literal notranslate"><span class="pre">utils.get_act_name</span></code>) and the hook function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layer_to_ablate</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">head_index_to_ablate</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="c1"># We define a head ablation hook</span>
+<span class="c1"># The type annotations are NOT necessary, they&#39;re just a useful guide to the reader</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nf">head_ablation_hook</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;pos&quot;</span><span class="p">,</span> <span class="s2">&quot;head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;d_head&quot;</span><span class="p">],</span>
+    <span class="n">hook</span><span class="p">:</span> <span class="n">HookPoint</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;pos&quot;</span><span class="p">,</span> <span class="s2">&quot;head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;d_head&quot;</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of the value tensor: </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">value</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">head_index_to_ablate</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+<span class="n">original_loss</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">gpt2_tokens</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;loss&quot;</span><span class="p">)</span>
+<span class="n">ablated_loss</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_with_hooks</span><span class="p">(</span>
+    <span class="n">gpt2_tokens</span><span class="p">,</span>
+    <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;loss&quot;</span><span class="p">,</span>
+    <span class="n">fwd_hooks</span><span class="o">=</span><span class="p">[(</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">get_act_name</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="n">layer_to_ablate</span><span class="p">),</span>
+        <span class="n">head_ablation_hook</span>
+        <span class="p">)]</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Original Loss: </span><span class="si">{</span><span class="n">original_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ablated Loss: </span><span class="si">{</span><span class="n">ablated_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Shape of the value tensor: torch.Size([1, 33, 12, 64])
 Original Loss: 3.999
 Ablated Loss: 4.117
 :::
 :::</p>
-<p>::: {.cell .markdown}
-<strong>Gotcha:</strong> Hooks are global state - they’re added in as part of the
+<p><strong>Gotcha:</strong> Hooks are global state - they’re added in as part of the
 model, and stay there until removed. <code class="docutils literal notranslate"><span class="pre">run_with_hooks</span></code> tries to create an
 abstraction where these are local state, by removing all hooks at the
 end of the function. But you can easily shoot yourself in the foot if
@@ -444,12 +463,10 @@ finishes. If you start getting bugs, try <code class="docutils literal notransla
 things up. Further, if you <em>do</em> add hooks of your own that you want to
 keep, which you can do with <code class="docutils literal notranslate"><span class="pre">add_hook</span></code> on the relevant
 :::</p>
-<p>::: {.cell .markdown}</p>
 <section id="activation-patching-on-the-indirect-object-identification-task">
 <h3>Activation Patching on the Indirect Object Identification Task<a class="headerlink" href="#activation-patching-on-the-indirect-object-identification-task" title="Permalink to this heading"></a></h3>
 <p>:::</p>
-<p>::: {.cell .markdown}
-For a somewhat more involved example, let’s use hooks to apply
+<p>For a somewhat more involved example, let’s use hooks to apply
 <strong><a class="reference external" href="https://dynalist.io/d/n2ZWtnoYHrU1s4vnFSAQ519J#z=qeWBvs-R-taFfcCq-S_hgMqx">activation
 patching</a></strong>
 on the <strong><a class="reference external" href="https://dynalist.io/d/n2ZWtnoYHrU1s4vnFSAQ519J#z=iWsV3s5Kdd2ca3zNgXr5UPHa">Indirect Object
@@ -484,6 +501,30 @@ prompt, and significantly negative on the corrupted prompt, showing that
 the model is capable of doing the task!
 :::</p>
 <p>::: {.cell .code execution_count=”15”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">clean_prompt</span> <span class="o">=</span> <span class="s2">&quot;After John and Mary went to the store, Mary gave a bottle of milk to&quot;</span>
+<span class="n">corrupted_prompt</span> <span class="o">=</span> <span class="s2">&quot;After John and Mary went to the store, John gave a bottle of milk to&quot;</span>
+
+<span class="n">clean_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_tokens</span><span class="p">(</span><span class="n">clean_prompt</span><span class="p">)</span>
+<span class="n">corrupted_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_tokens</span><span class="p">(</span><span class="n">corrupted_prompt</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">logits_to_logit_diff</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">correct_answer</span><span class="o">=</span><span class="s2">&quot; John&quot;</span><span class="p">,</span> <span class="n">incorrect_answer</span><span class="o">=</span><span class="s2">&quot; Mary&quot;</span><span class="p">):</span>
+    <span class="c1"># model.to_single_token maps a string value of a single token to the token index for that token</span>
+    <span class="c1"># If the string is not a single token, it raises an error.</span>
+    <span class="n">correct_index</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="n">correct_answer</span><span class="p">)</span>
+    <span class="n">incorrect_index</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="n">incorrect_answer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logits</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">correct_index</span><span class="p">]</span> <span class="o">-</span> <span class="n">logits</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">incorrect_index</span><span class="p">]</span>
+
+<span class="c1"># We run on the clean prompt with the cache so we store activations to patch in later.</span>
+<span class="n">clean_logits</span><span class="p">,</span> <span class="n">clean_cache</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_with_cache</span><span class="p">(</span><span class="n">clean_tokens</span><span class="p">)</span>
+<span class="n">clean_logit_diff</span> <span class="o">=</span> <span class="n">logits_to_logit_diff</span><span class="p">(</span><span class="n">clean_logits</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Clean logit difference: </span><span class="si">{</span><span class="n">clean_logit_diff</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># We don&#39;t need to cache on the corrupted prompt.</span>
+<span class="n">corrupted_logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">corrupted_tokens</span><span class="p">)</span>
+<span class="n">corrupted_logit_diff</span> <span class="o">=</span> <span class="n">logits_to_logit_diff</span><span class="p">(</span><span class="n">corrupted_logits</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Corrupted logit difference: </span><span class="si">{</span><span class="n">corrupted_logit_diff</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Clean logit difference: 4.276
 Corrupted logit difference: -2.738
@@ -502,6 +543,37 @@ signature (activation, hook), but we can use <code class="docutils literal notra
 the position parameter before passing it to <code class="docutils literal notranslate"><span class="pre">run_with_hooks</span></code>
 :::</p>
 <p>::: {.cell .code execution_count=”16”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># We define a residual stream patching hook</span>
+<span class="c1"># We choose to act on the residual stream at the start of the layer, so we call it resid_pre</span>
+<span class="c1"># The type annotations are a guide to the reader and are not necessary</span>
+<span class="k">def</span> <span class="nf">residual_stream_patching_hook</span><span class="p">(</span>
+    <span class="n">resid_pre</span><span class="p">:</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;pos&quot;</span><span class="p">,</span> <span class="s2">&quot;d_model&quot;</span><span class="p">],</span>
+    <span class="n">hook</span><span class="p">:</span> <span class="n">HookPoint</span><span class="p">,</span>
+    <span class="n">position</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;pos&quot;</span><span class="p">,</span> <span class="s2">&quot;d_model&quot;</span><span class="p">]:</span>
+    <span class="c1"># Each HookPoint has a name attribute giving the name of the hook.</span>
+    <span class="n">clean_resid_pre</span> <span class="o">=</span> <span class="n">clean_cache</span><span class="p">[</span><span class="n">hook</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    <span class="n">resid_pre</span><span class="p">[:,</span> <span class="n">position</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">clean_resid_pre</span><span class="p">[:,</span> <span class="n">position</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">return</span> <span class="n">resid_pre</span>
+
+<span class="c1"># We make a tensor to store the results for each patching run. We put it on the model&#39;s device to avoid needing to move things between the GPU and CPU, which can be slow.</span>
+<span class="n">num_positions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">clean_tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ioi_patching_result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">n_layers</span><span class="p">,</span> <span class="n">num_positions</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">n_layers</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_positions</span><span class="p">):</span>
+        <span class="c1"># Use functools.partial to create a temporary hook function with the position fixed</span>
+        <span class="n">temp_hook_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">residual_stream_patching_hook</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">)</span>
+        <span class="c1"># Run the model with the patching hook</span>
+        <span class="n">patched_logits</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_with_hooks</span><span class="p">(</span><span class="n">corrupted_tokens</span><span class="p">,</span> <span class="n">fwd_hooks</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">get_act_name</span><span class="p">(</span><span class="s2">&quot;resid_pre&quot;</span><span class="p">,</span> <span class="n">layer</span><span class="p">),</span> <span class="n">temp_hook_fn</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="c1"># Calculate the logit difference</span>
+        <span class="n">patched_logit_diff</span> <span class="o">=</span> <span class="n">logits_to_logit_diff</span><span class="p">(</span><span class="n">patched_logits</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="c1"># Store the result, normalizing by the clean and corrupted logit difference so it&#39;s between 0 and 1 (ish)</span>
+        <span class="n">ioi_patching_result</span><span class="p">[</span><span class="n">layer</span><span class="p">,</span> <span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">patched_logit_diff</span> <span class="o">-</span> <span class="n">corrupted_logit_diff</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">clean_logit_diff</span> <span class="o">-</span> <span class="n">corrupted_logit_diff</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .display_data}</p>
 <p>:::
 :::</p>
@@ -515,6 +587,11 @@ indirect object. (Note - the heads are in layer 7 and 8, not 8 and 9,
 because we patched in the residual stream at the <em>start</em> of each layer)
 :::</p>
 <p>::: {.cell .code execution_count=”17”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the index to the end of the label, because plotly doesn&#39;t like duplicate labels</span>
+<span class="n">token_labels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="n">clean_tokens</span><span class="p">))]</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">ioi_patching_result</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">token_labels</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;Position&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;Layer&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Normalized Logit Difference After Patching Residual Stream on the IOI Task&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .display_data}</p>
 <p>:::
 :::</p>
@@ -560,6 +637,16 @@ loss at predicting the next token, by position. We see that the model
 goes from terrible to very good at the halfway point.
 :::</p>
 <p>::: {.cell .code execution_count=”18”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">seq_len</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">random_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="n">repeated_tokens</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">random_tokens</span><span class="p">,</span> <span class="s2">&quot;batch seq_len -&gt; batch (2 seq_len)&quot;</span><span class="p">)</span>
+<span class="n">repeated_logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">repeated_tokens</span><span class="p">)</span>
+<span class="n">correct_log_probs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">repeated_logits</span><span class="p">,</span> <span class="n">repeated_tokens</span><span class="p">,</span> <span class="n">per_token</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">loss_by_position</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">correct_log_probs</span><span class="p">,</span> <span class="s2">&quot;batch position -&gt; position&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="n">line</span><span class="p">(</span><span class="n">loss_by_position</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;Position&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;Loss&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Loss by position on random repeated tokens&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .display_data}</p>
 <p>:::
 :::</p>
@@ -570,6 +657,35 @@ places back. So by looking at the average attention paid 49 tokens back,
 we can identify induction heads! Let’s define a hook to do this!</p>
 <p>:::</p>
 <p>::: {.cell .code execution_count=”19”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># We make a tensor to store the induction score for each head. We put it on the model&#39;s device to avoid needing to move things between the GPU and CPU, which can be slow.</span>
+<span class="n">induction_score_store</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">n_layers</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">n_heads</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">induction_score_hook</span><span class="p">(</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;dest_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;source_pos&quot;</span><span class="p">],</span>
+    <span class="n">hook</span><span class="p">:</span> <span class="n">HookPoint</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># We take the diagonal of attention paid from each destination position to source positions seq_len-1 tokens back</span>
+    <span class="c1"># (This only has entries for tokens with index&gt;=seq_len)</span>
+    <span class="n">induction_stripe</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">dim1</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim2</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">1</span><span class="o">-</span><span class="n">seq_len</span><span class="p">)</span>
+    <span class="c1"># Get an average score per head</span>
+    <span class="n">induction_score</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">induction_stripe</span><span class="p">,</span> <span class="s2">&quot;batch head_index position -&gt; head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+    <span class="c1"># Store the result.</span>
+    <span class="n">induction_score_store</span><span class="p">[</span><span class="n">hook</span><span class="o">.</span><span class="n">layer</span><span class="p">(),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">induction_score</span>
+
+<span class="c1"># We make a boolean filter on activation names, that&#39;s true only on attention pattern names.</span>
+<span class="n">pattern_hook_names_filter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;pattern&quot;</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">run_with_hooks</span><span class="p">(</span>
+    <span class="n">repeated_tokens</span><span class="p">,</span>
+    <span class="n">return_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="c1"># For efficiency, we don&#39;t need to calculate the logits</span>
+    <span class="n">fwd_hooks</span><span class="o">=</span><span class="p">[(</span>
+        <span class="n">pattern_hook_names_filter</span><span class="p">,</span>
+        <span class="n">induction_score_hook</span>
+    <span class="p">)]</span>
+<span class="p">)</span>
+
+<span class="n">imshow</span><span class="p">(</span><span class="n">induction_score_store</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;Head&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;Layer&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Induction Score by Head&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .display_data}</p>
 <p>:::
 :::</p>
@@ -582,6 +698,31 @@ for it and see this directly - including the “induction stripe” at
 visualize the pattern of the relevant head.
 :::</p>
 <p>::: {.cell .code execution_count=”20”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">induction_head_layer</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">induction_head_index</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">single_random_sequence</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="n">repeated_random_sequence</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">single_random_sequence</span><span class="p">,</span> <span class="s2">&quot;batch seq_len -&gt; batch (2 seq_len)&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">visualize_pattern_hook</span><span class="p">(</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;dest_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;source_pos&quot;</span><span class="p">],</span>
+    <span class="n">hook</span><span class="p">:</span> <span class="n">HookPoint</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">display</span><span class="p">(</span>
+        <span class="n">cv</span><span class="o">.</span><span class="n">attention</span><span class="o">.</span><span class="n">attention_patterns</span><span class="p">(</span>
+            <span class="n">tokens</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="n">repeated_random_sequence</span><span class="p">),</span>
+            <span class="n">attention</span><span class="o">=</span><span class="n">pattern</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">induction_head_index</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:][</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="c1"># Add a dummy axis, as CircuitsVis expects 3D patterns.</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">run_with_hooks</span><span class="p">(</span>
+    <span class="n">repeated_random_sequence</span><span class="p">,</span>
+    <span class="n">return_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">fwd_hooks</span><span class="o">=</span><span class="p">[(</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">get_act_name</span><span class="p">(</span><span class="s2">&quot;pattern&quot;</span><span class="p">,</span> <span class="n">induction_head_layer</span><span class="p">),</span>
+        <span class="n">visualize_pattern_hook</span>
+    <span class="p">)]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks…
 To disable this warning, you can either:
@@ -622,6 +763,36 @@ DistilGPT-2 (a distilled version of GPT-2, with half as many layers) and
 copy the code from above to see the induction heads in that model.
 :::</p>
 <p>::: {.cell .code execution_count=”21”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">distilgpt2</span> <span class="o">=</span> <span class="n">HookedTransformer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;distilgpt2&quot;</span><span class="p">)</span>
+<span class="c1"># We make a tensor to store the induction score for each head. We put it on the model&#39;s device to avoid needing to move things between the GPU and CPU, which can be slow.</span>
+<span class="n">distilgpt2_induction_score_store</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">distilgpt2</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">n_layers</span><span class="p">,</span> <span class="n">distilgpt2</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">n_heads</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">distilgpt2</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">induction_score_hook</span><span class="p">(</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n">TT</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;dest_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;source_pos&quot;</span><span class="p">],</span>
+    <span class="n">hook</span><span class="p">:</span> <span class="n">HookPoint</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># We take the diagonal of attention paid from each destination position to source positions seq_len-1 tokens back</span>
+    <span class="c1"># (This only has entries for tokens with index&gt;=seq_len)</span>
+    <span class="n">induction_stripe</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">dim1</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim2</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">1</span><span class="o">-</span><span class="n">seq_len</span><span class="p">)</span>
+    <span class="c1"># Get an average score per head</span>
+    <span class="n">induction_score</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">induction_stripe</span><span class="p">,</span> <span class="s2">&quot;batch head_index position -&gt; head_index&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+    <span class="c1"># Store the result.</span>
+    <span class="n">distilgpt2_induction_score_store</span><span class="p">[</span><span class="n">hook</span><span class="o">.</span><span class="n">layer</span><span class="p">(),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">induction_score</span>
+
+<span class="c1"># We make a boolean filter on activation names, that&#39;s true only on attention pattern names.</span>
+<span class="n">pattern_hook_names_filter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;pattern&quot;</span><span class="p">)</span>
+
+<span class="n">distilgpt2</span><span class="o">.</span><span class="n">run_with_hooks</span><span class="p">(</span>
+    <span class="n">repeated_tokens</span><span class="p">,</span>
+    <span class="n">return_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="c1"># For efficiency, we don&#39;t need to calculate the logits</span>
+    <span class="n">fwd_hooks</span><span class="o">=</span><span class="p">[(</span>
+        <span class="n">pattern_hook_names_filter</span><span class="p">,</span>
+        <span class="n">induction_score_hook</span>
+    <span class="p">)]</span>
+<span class="p">)</span>
+
+<span class="n">imshow</span><span class="p">(</span><span class="n">distilgpt2_induction_score_store</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;Head&quot;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;Layer&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Induction Score by Head in Distil GPT-2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stderr}
 Using pad_token, but it is not set yet.
 :::</p>
@@ -858,6 +1029,11 @@ blocks.0.mlp.b_out torch.Size([768])
 <strong>Embedding &amp; Unembedding parameters:</strong>
 :::</p>
 <p>::: {.cell .code execution_count=”23”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;blocks&quot;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 embed.W_E torch.Size([50257, 768])
 pos_embed.W_pos torch.Size([1024, 768])
@@ -892,6 +1068,21 @@ attention pattern and scores have shape
 the same, unless we’re using caching).
 :::</p>
 <p>::: {.cell .code execution_count=”24”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">test_prompt</span> <span class="o">=</span> <span class="s2">&quot;The quick brown fox jumped over the lazy dog&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Num tokens:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_tokens</span><span class="p">(</span><span class="n">test_prompt</span><span class="p">)))</span>
+
+<span class="k">def</span> <span class="nf">print_name_shape_hook_function</span><span class="p">(</span><span class="n">activation</span><span class="p">,</span> <span class="n">hook</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">activation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">not_in_late_block_filter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;blocks.0.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;blocks&quot;</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">run_with_hooks</span><span class="p">(</span>
+    <span class="n">test_prompt</span><span class="p">,</span>
+    <span class="n">return_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">fwd_hooks</span><span class="o">=</span><span class="p">[(</span><span class="n">not_in_late_block_filter</span><span class="p">,</span> <span class="n">print_name_shape_hook_function</span><span class="p">)],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Num tokens: 1
 hook_embed torch.Size([1, 10, 768])
@@ -974,8 +1165,23 @@ we see common punctuation and words like ” the” and ” and”, at the
 bottom we see weird-ass tokens like ” RandomRedditor”:
 :::</p>
 <p>::: {.cell .code execution_count=”25”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unembed_bias</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">unembed</span><span class="o">.</span><span class="n">b_U</span>
+<span class="n">bias_values</span><span class="p">,</span> <span class="n">bias_indices</span> <span class="o">=</span> <span class="n">unembed_bias</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>:::</p>
 <p>::: {.cell .code execution_count=”26”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">top_k</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Top </span><span class="si">{</span><span class="n">top_k</span><span class="si">}</span><span class="s2"> values&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">top_k</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bias_values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">bias_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bottom </span><span class="si">{</span><span class="n">top_k</span><span class="si">}</span><span class="s2"> values&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">top_k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bias_values</span><span class="p">[</span><span class="o">-</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">bias_indices</span><span class="p">[</span><span class="o">-</span><span class="n">i</span><span class="p">]))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Top 20 values
 7.03 ‘,’
@@ -1030,6 +1236,14 @@ things being the same, this makes the John token 3.6x times more likely
 than the Mary token.
 :::</p>
 <p>::: {.cell .code execution_count=”27”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">john_bias</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">unembed</span><span class="o">.</span><span class="n">b_U</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="s1">&#39; John&#39;</span><span class="p">)]</span>
+<span class="n">mary_bias</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">unembed</span><span class="o">.</span><span class="n">b_U</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="s1">&#39; Mary&#39;</span><span class="p">)]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;John bias: </span><span class="si">{</span><span class="n">john_bias</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mary bias: </span><span class="si">{</span><span class="n">mary_bias</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prob ratio bias: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">john_bias</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mary_bias</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 John bias: 2.8995
 Mary bias: 1.6034
@@ -1082,6 +1296,11 @@ but eg <code class="docutils literal notranslate"><span class="pre">'s</span></c
 :::</p></li>
 </ul>
 <p>::: {.cell .code execution_count=”28”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">example_text</span> <span class="o">=</span> <span class="s2">&quot;The first thing you need to figure out is *how* things are tokenized. `model.to_str_tokens` splits a string into the tokens *as a list of substrings*, and so lets you explore what the text looks like. To demonstrate this, let&#39;s use it on this paragraph.&quot;</span>
+<span class="n">example_text_str_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="n">example_text</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">example_text_str_tokens</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 [‘&lt;|endoftext|&gt;’, ‘The’, ‘ first’, ‘ thing’, ‘ you’, ‘ need’, ‘ to’, ‘ figure’, ‘ out’, ‘ is’, ‘ <em>‘, ‘how’, ‘</em>’, ‘ things’, ‘ are’, ‘ token’, ‘ized’, ‘.’, ‘ <code class="docutils literal notranslate"><span class="pre">',</span> <span class="pre">'model',</span> <span class="pre">'.',</span> <span class="pre">'to',</span> <span class="pre">'_',</span> <span class="pre">'str',</span> <span class="pre">'_',</span> <span class="pre">'t',</span> <span class="pre">'ok',</span> <span class="pre">'ens',</span> <span class="pre">'</span></code>’, ‘ splits’, ‘ a’, ‘ string’, ‘ into’, ‘ the’, ‘ tokens’, ‘ <em>‘, ‘as’, ‘ a’, ‘ list’, ‘ of’, ‘ sub’, ‘strings’, ‘</em>,’, ‘ and’, ‘ so’, ‘ lets’, ‘ you’, ‘ explore’, ‘ what’, ‘ the’, ‘ text’, ‘ looks’, ‘ like’, ‘.’, ‘ To’, ‘ demonstrate’, ‘ this’, ‘,’, ‘ let’, “‘s”, ‘ use’, ‘ it’, ‘ on’, ‘ this’, ‘ paragraph’, ‘.’]
 :::
@@ -1093,6 +1312,10 @@ this, and returns a tensor of integers on the model’s device (shape
 <code class="docutils literal notranslate"><span class="pre">[batch,</span> <span class="pre">position]</span></code>). It maps a string to a batch of size 1.
 :::</p>
 <p>::: {.cell .code execution_count=”29”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">example_text_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_tokens</span><span class="p">(</span><span class="n">example_text</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">example_text_tokens</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 tensor([[50256,   464,   717,  1517,   345,   761,   284,  3785,   503,   318,
 1635,  4919,     9,  1243,   389, 11241,  1143,    13,  4600, 19849,
@@ -1112,6 +1335,11 @@ length.</p>
 sequence and padding token - see the <code class="docutils literal notranslate"><span class="pre">prepend_bos</span></code> section for details)
 :::</p>
 <p>::: {.cell .code execution_count=”30”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">example_multi_text</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;The cat sat on the mat.&quot;</span><span class="p">,</span> <span class="s2">&quot;The cat sat on the mat really hard.&quot;</span><span class="p">]</span>
+<span class="n">example_multi_text_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_tokens</span><span class="p">(</span><span class="n">example_multi_text</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">example_multi_text_tokens</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 tensor([[50256,   464,  3797,  3332,   319,   262,  2603,    13, 50256, 50256],
 [50256,   464,  3797,  3332,   319,   262,  2603,  1107,  1327,    13]],
@@ -1141,6 +1369,13 @@ tokenization, this will be the most common pair of ASCII characters!),
 and also verify that our tokens above map back to a string.
 :::</p>
 <p>::: {.cell .code execution_count=”32”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Token 256 - the most common pair of ASCII characters: |</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span><span class="si">}</span><span class="s2">|&quot;</span><span class="p">)</span>
+<span class="c1"># Squeeze means to remove dimensions of length 1.</span>
+<span class="c1"># Here, that removes the dummy batch dimension so it&#39;s a rank 1 tensor and returns a string</span>
+<span class="c1"># Rank 2 tensors map to a list of strings</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;De-Tokenizing the example tokens: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">example_text_tokens</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Token 256 - the most common pair of ASCII characters: | t|
 De-Tokenizing the example tokens: &lt;|endoftext|&gt;The first thing you need to figure out is <em>how</em> things are tokenized. <code class="docutils literal notranslate"><span class="pre">model.to_str_tokens</span></code> splits a string into the tokens <em>as a list of substrings</em>, and so lets you explore what the text looks like. To demonstrate this, let’s use it on this paragraph.
@@ -1157,6 +1392,10 @@ there’s a beginning of sequence token automatically prepended (see the
 next section for details)
 :::</p>
 <p>::: {.cell .code execution_count=”33”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;With BOS:&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">get_token_position</span><span class="p">(</span><span class="s2">&quot; cat&quot;</span><span class="p">,</span> <span class="s2">&quot;The cat sat on the mat&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Without BOS:&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">get_token_position</span><span class="p">(</span><span class="s2">&quot; cat&quot;</span><span class="p">,</span> <span class="s2">&quot;The cat sat on the mat&quot;</span><span class="p">,</span> <span class="n">prepend_bos</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 With BOS: 2
 Without BOS: 1
@@ -1167,6 +1406,16 @@ If there are multiple copies of the token, we can set <code class="docutils lite
 find the first occurence’s position and <code class="docutils literal notranslate"><span class="pre">mode=&quot;last&quot;</span></code> to find the last
 :::</p>
 <p>::: {.cell .code execution_count=”34”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First occurence&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">get_token_position</span><span class="p">(</span>
+    <span class="s2">&quot; cat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;The cat sat on the mat. The mat sat on the cat.&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Final occurence&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">get_token_position</span><span class="p">(</span>
+    <span class="s2">&quot; cat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;The cat sat on the mat. The mat sat on the cat.&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 First occurence 2
 Final occurence 13
@@ -1181,6 +1430,10 @@ let’s look at the tokenization of arithmetic expressions - tokens do
 impressive that GPT-3 can do arithmetic!)
 :::</p>
 <p>::: {.cell .code execution_count=”35”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="s2">&quot;2342+2017=21445&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="s2">&quot;1000+1000000=999999&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 [‘&lt;|endoftext|&gt;’, ‘23’, ‘42’, ‘+’, ‘2017’, ‘=’, ‘214’, ‘45’]
 [‘&lt;|endoftext|&gt;’, ‘1000’, ‘+’, ‘1’, ‘000000’, ‘=’, ‘9999’, ‘99’]
@@ -1221,6 +1474,11 @@ eg, want to input a question followed by an answer, and want to tokenize
 these separately, you do <em>not</em> want to prepend_bos on the answer.
 :::</p>
 <p>::: {.cell .code execution_count=”36”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Logits shape by default (with BOS)&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Logits shape with BOS&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">,</span> <span class="n">prepend_bos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Logits shape without BOS - only 2 positions!&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">,</span> <span class="n">prepend_bos</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Logits shape by default (with BOS) torch.Size([1, 3, 50257])
 Logits shape with BOS torch.Size([1, 3, 50257])
@@ -1245,6 +1503,17 @@ interpretability easier.</p>
 Identification without a BOS (and with a name as the first token):
 :::</p>
 <p>::: {.cell .code execution_count=”37”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ioi_logits_with_bos</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="s2">&quot;Claire and Mary went to the shops, then Mary gave a bottle of milk to&quot;</span><span class="p">,</span> <span class="n">prepend_bos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mary_logit_with_bos</span> <span class="o">=</span> <span class="n">ioi_logits_with_bos</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="s2">&quot; Mary&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="n">claire_logit_with_bos</span> <span class="o">=</span> <span class="n">ioi_logits_with_bos</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="s2">&quot; Claire&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logit difference with BOS: </span><span class="si">{</span><span class="p">(</span><span class="n">claire_logit_with_bos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mary_logit_with_bos</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">ioi_logits_without_bos</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="s2">&quot;Claire and Mary went to the shops, then Mary gave a bottle of milk to&quot;</span><span class="p">,</span> <span class="n">prepend_bos</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mary_logit_without_bos</span> <span class="o">=</span> <span class="n">ioi_logits_without_bos</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="s2">&quot; Mary&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="n">claire_logit_without_bos</span> <span class="o">=</span> <span class="n">ioi_logits_without_bos</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">to_single_token</span><span class="p">(</span><span class="s2">&quot; Claire&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logit difference without BOS: </span><span class="si">{</span><span class="p">(</span><span class="n">claire_logit_without_bos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mary_logit_without_bos</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Logit difference with BOS: 6.754
 Logit difference without BOS: 2.782
@@ -1258,6 +1527,10 @@ in this test we put <code class="docutils literal notranslate"><span class="pre"
 tokenization of a specific string, not to give an input to the model!)
 :::</p>
 <p>::: {.cell .code execution_count=”38”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;| Claire| -&gt; </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="s1">&#39; Claire&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">prepend_bos</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;|Claire| -&gt; </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">to_str_tokens</span><span class="p">(</span><span class="s1">&#39;Claire&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">prepend_bos</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 | Claire| -&gt; [’ Claire’]
 |Claire| -&gt; [‘Cl’, ‘aire’]
@@ -1288,6 +1561,17 @@ We can use the basic class directly - let’s make a factored matrix
 directly and look at the basic operations:
 :::</p>
 <p>::: {.cell .code execution_count=”39”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">AB</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">B</span>
+<span class="n">AB_factor</span> <span class="o">=</span> <span class="n">FactoredMatrix</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Norms:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">AB</span><span class="o">.</span><span class="n">norm</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">AB_factor</span><span class="o">.</span><span class="n">norm</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Right dimension: </span><span class="si">{</span><span class="n">AB_factor</span><span class="o">.</span><span class="n">rdim</span><span class="si">}</span><span class="s2">, Left dimension: </span><span class="si">{</span><span class="n">AB_factor</span><span class="o">.</span><span class="n">ldim</span><span class="si">}</span><span class="s2">, Hidden dimension: </span><span class="si">{</span><span class="n">AB_factor</span><span class="o">.</span><span class="n">mdim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Norms:
 tensor(5.7439)
@@ -1302,6 +1586,15 @@ eigenvalues and singular values are zero - the factored class omits the
 zeros.
 :::</p>
 <p>::: {.cell .code execution_count=”40”}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Eigenvalues:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">AB</span><span class="p">)</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">AB_factor</span><span class="o">.</span><span class="n">eigenvalues</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Singular Values:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">AB</span><span class="p">)</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">AB_factor</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>::: {.output .stream .stdout}
 Eigenvalues:
 tensor([-1.6199e+00+0.0000e+00j,  1.0446e+00+0.0000e+00j,
