@@ -23,6 +23,7 @@ Import the library with import transformer_lens
 # Setup
 
 (No need to read):
+
 ```
 # Janky code to do different setup when run in a Colab notebook vs VSCode
 DEVELOPMENT_MODE = False

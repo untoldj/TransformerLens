@@ -1,4 +1,4 @@
-Transformer Lens Documentation
+Transformer Lens
 ===================================
 
 This is a library for doing mechanistic interpretability of GPT-2 Style language models. The goal of mechanistic interpretability is to take a trained model and reverse engineer the algorithms the model learned during training from its weights. It is a fact about the world today that we have computer programs that can essentially speak English at a human level (GPT-3, PaLM, etc), yet we have no idea how they work nor how to write one ourselves. This offends me greatly, and I would like to solve this!
@@ -8,10 +8,12 @@ TransformerLens lets you load in an open source language model, like GPT-2, and 
 I used to work for the Anthropic interpretability team, and I wrote this library because after I left and tried doing independent research, I got extremely frustrated by the state of open source tooling. There's a lot of excellent infrastructure like HuggingFace and DeepSpeed to use or train models, but very little to dig into their internals and reverse engineer how they work. This library tries to solve that, and to make it easy to get into the field even if you don't work at an industry org with real infrastructure! One of the great things about mechanistic interpretability is that you don't need large models or tons of compute. There are lots of important open problems that can be solved with a small model in a Colab notebook!
 
 The core features were heavily inspired by the interface to Anthropic's excellent Garcon tool. Credit to Nelson Elhage and Chris Olah for building Garcon and showing me the value of good infrastructure for enabling exploratory research!
+.. note::
+
+   This project is under active development.
 
 Contents
 --------
 
 .. toctree::
-
-   vertopal.com_transformerlensdemo
+  vertopal.com_transformerlensdemo
