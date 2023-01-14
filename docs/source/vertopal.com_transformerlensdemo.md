@@ -11,12 +11,19 @@ accelerator.***
 -   Use the table of contents pane in the sidebar to navigate
 -   Collapse irrelevant sections with the dropdown arrows
 -   Search the page using the search in the sidebar, not CTRL+F
-:::
 
+# Installation
+
+`pip install git+https://github.com/neelnanda-io/TransformerLens`
+
+Import the library with import transformer_lens
+
+(Note: This library used to be known as EasyTransformer, and some breaking changes have been made since the rename. If you need to use the old version with some legacy code, run `pip install git+https://github.com/neelnanda-io/TransformerLens@v1`.)
 
 # Setup
 
 (No need to read):
+
 ```
 # Janky code to do different setup when run in a Colab notebook vs VSCode
 DEVELOPMENT_MODE = False
@@ -133,51 +140,6 @@ def scatter(x, y, xaxis="", yaxis="", caxis="", renderer=None, **kwargs):
     y = utils.to_numpy(y)
     px.scatter(y=y, x=x, labels={"x":xaxis, "y":yaxis, "color":caxis}, **kwargs).show(renderer)
 ```
-# Introduction
-
-This is a demo notebook for
-[TransformerLens](https://github.com/neelnanda-io/TransformerLens), **a
-library I ([Neel Nanda](neelnanda.io)) wrote for doing [mechanistic
-interpretability](https://distill.pub/2020/circuits/zoom-in/) of GPT-2
-Style language models.** The goal of mechanistic interpretability is to
-take a trained model and reverse engineer the algorithms the model
-learned during training from its weights. It is a fact about the world
-today that we have computer programs that can essentially speak English
-at a human level (GPT-3, PaLM, etc), yet we have no idea how they work
-nor how to write one ourselves. This offends me greatly, and I would
-like to solve this! Mechanistic interpretability is a very young and
-small field, and there are a *lot* of open problems - if you would like
-to help, please try working on one! **If you want to skill up, check out
-[my guide to getting started](https://neelnanda.io/getting-started), and
-if you want to jump into an open problem check out my sequence [200
-Concrete Open Problems in Mechanistic
-Interpretability](https://neelnanda.io/concrete-open-problems).**
-
-I wrote this library because after I left the Anthropic interpretability
-team and started doing independent research, I got extremely frustrated
-by the state of open source tooling. There\'s a lot of excellent
-infrastructure like HuggingFace and DeepSpeed to *use* or *train*
-models, but very little to dig into their internals and reverse engineer
-how they work. **This library tries to solve that**, and to make it easy
-to get into the field even if you don\'t work at an industry org with
-real infrastructure! The core features were heavily inspired by
-[Anthropic\'s excellent Garcon
-tool](https://transformer-circuits.pub/2021/garcon/index.html). Credit
-to Nelson Elhage and Chris Olah for building Garcon and showing me the
-value of good infrastructure for accelerating exploratory research!
-
-The core design principle I\'ve followed is to enable exploratory
-analysis - one of the most fun parts of mechanistic interpretability
-compared to normal ML is the extremely short feedback loops! The point
-of this library is to keep the gap between having an experiment idea and
-seeing the results as small as possible, to make it easy for **research
-to feel like play** and to enter a flow state. This notebook
-demonstrates how the library works and how to use it, but if you want to
-see how well it works for exploratory research, check out [my notebook
-analysing Indirect Objection
-Identification](https://neelnanda.io/exploratory-analysis-demo) or [my
-recording of myself doing
-research](https://www.youtube.com/watch?v=yo4QvDn-vsU)!
 
 ## Loading and Running Models
 
